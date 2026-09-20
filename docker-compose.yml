@@ -18,6 +18,9 @@
 # RabbitMQ are reachable from inside the network alone, which is why their
 # default credentials are acceptable: change them anyway if the Docker host
 # is shared.
+#
+# IFOREVENTS_VERSION defaults to the newest release this file was tested
+# with; set it in .env to move (releases: github.com/innovafour/iforevents-selfhosted/releases).
 
 x-logging: &logging
   driver: json-file
@@ -84,7 +87,7 @@ services:
       start_period: 20s
 
   api:
-    image: ghcr.io/innovafour/iforevents-api:${IFOREVENTS_VERSION:-latest}
+    image: ghcr.io/innovafour/iforevents-api:${IFOREVENTS_VERSION:-1.0.0-rc.1}
     restart: unless-stopped
     logging: *logging
     ports:
@@ -157,7 +160,7 @@ services:
       start_period: 40s
 
   dashboard:
-    image: ghcr.io/innovafour/iforevents-dashboard:${IFOREVENTS_VERSION:-latest}
+    image: ghcr.io/innovafour/iforevents-dashboard:${IFOREVENTS_VERSION:-1.0.0-rc.1}
     restart: unless-stopped
     logging: *logging
     ports:
