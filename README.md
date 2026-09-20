@@ -62,7 +62,7 @@ every variable with its default; the ones people set most:
 |---|---|
 | `PUBLIC_URL`, `API_PUBLIC_URL` | You reach the install through a domain or a LAN address instead of localhost |
 | `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Create the admin at boot, for unattended installs |
-| `SMTP_*` | Send invitations and password resets by e-mail |
+| `RESEND_API_KEY` + `RESEND_FROM`, or `SMTP_*` | Send invitations and password resets by e-mail |
 | `DB_PASSWORD`, `RABBITMQ_PASSWORD`, `TOKEN_SECRET` | Your own secrets instead of the internal defaults |
 | `IFOREVENTS_VERSION` | Pin a release |
 | `EVENTS_RETENTION_DAYS` | Drop raw events after N days |

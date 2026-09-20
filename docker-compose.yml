@@ -129,8 +129,11 @@ services:
       BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Admin}
       BOOTSTRAP_ORGANIZATION_NAME: ${BOOTSTRAP_ORGANIZATION_NAME:-My organization}
 
-      # Optional. Without SMTP, accounts are verified on creation and reset
-      # links are written to the api log (docker compose logs api).
+      # Optional: Resend API key, or an SMTP relay. Without either, accounts
+      # are verified on creation and reset links are written to the api log
+      # (docker compose logs api).
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
