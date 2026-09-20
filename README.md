@@ -76,6 +76,8 @@ in front of both services on one domain with an automatic Let's Encrypt
 certificate. Point the DNS record at the host, open ports 80 and 443, then:
 
 ```bash
+curl -fsSLO https://raw.githubusercontent.com/innovafour/iforevents-selfhosted/main/docker-compose.caddy.yml
+curl -fsSLO https://raw.githubusercontent.com/innovafour/iforevents-selfhosted/main/Caddyfile
 cat >> .env <<'ENV'
 DOMAIN=analytics.example.com
 ACME_EMAIL=you@example.com
@@ -103,7 +105,9 @@ docker compose up -d
 
 Releases and their notes: https://github.com/innovafour/iforevents-selfhosted/releases.
 Image tags follow the release (`1.4.2`, `1.4`, `1`, `latest`); both images
-of one release are tested together, so upgrade them together.
+of one release are tested together, so upgrade them together. The compose
+file defaults to the newest release it was tested with; `IFOREVENTS_VERSION`
+in `.env` moves it (`latest` follows the newest stable release).
 
 ## Back up
 
@@ -144,5 +148,6 @@ docker compose down -v
 - Documentation: https://iforevents.com/docs
 - Issues and questions: https://github.com/innovafour/iforevents-selfhosted/issues
 
-MIT licensed. The hosted edition at iforevents.com runs the same images with
-a managed control plane; it is available by invitation.
+MIT licensed. The hosted edition, IForevents Cloud, runs the same images with
+a managed control plane; sign up at https://app.iforevents.com/register and
+start on the free plan (5M events a month), see https://iforevents.com/docs/cloud.
