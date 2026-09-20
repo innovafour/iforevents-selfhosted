@@ -1,0 +1,20 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	@api path /v1/* /mcp /mcp/* /.well-known/* /openapi.json /health /ready
+	handle @api {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy dashboard:8010
+	}
+
+	header {
+		-Server
+	}
+}
