@@ -138,7 +138,10 @@ jobs:
 
           or set \`IFOREVENTS_VERSION=${VERSION}\` in \`.env\`. The install test passed on a fresh \`docker compose up -d\` with these images.
           NOTES
-          gh release create "v${VERSION}" --title "IForevents ${VERSION}" --notes-file notes.md --latest
+          case "$VERSION" in
+            *-*) gh release create "v${VERSION}" --title "IForevents ${VERSION}" --notes-file notes.md --prerelease ;;
+            *)   gh release create "v${VERSION}" --title "IForevents ${VERSION}" --notes-file notes.md --latest ;;
+          esac
 
       - name: Waiting for the other image
         if: steps.images.outputs.ready != 'true'
