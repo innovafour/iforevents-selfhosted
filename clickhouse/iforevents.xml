@@ -1,0 +1,39 @@
+<!-- ClickHouse defaults for a single-node IForevents install. Mounted at
+     /etc/clickhouse-server/config.d/ by docker-compose.yml.
+
+     ClickHouse would otherwise claim 90% of the host's RAM and log every
+     query at trace level. These caps leave room for the api, Redis and
+     RabbitMQ on the same box; raise them on a dedicated host. -->
+<clickhouse>
+  <logger>
+    <level>warning</level>
+    <console>1</console>
+  </logger>
+
+  <max_server_memory_usage_to_ram_ratio>0.6</max_server_memory_usage_to_ram_ratio>
+  <max_concurrent_queries>64</max_concurrent_queries>
+  <mark_cache_size>536870912</mark_cache_size>
+
+  <!-- `BACKUP DATABASE iforevents TO Disk('backups', 'name.zip')` writes to
+       ./backups on the host (bind-mounted by docker-compose.yml). -->
+  <storage_configuration>
+    <disks>
+      <backups>
+        <type>local</type>
+        <path>/backups/</path>
+      </backups>
+    </disks>
+  </storage_configuration>
+  <backups>
+    <allowed_disk>backups</allowed_disk>
+    <allowed_path>/backups/</allowed_path>
+  </backups>
+
+  <profiles>
+    <default>
+      <max_memory_usage>2000000000</max_memory_usage>
+      <max_bytes_before_external_group_by>1000000000</max_bytes_before_external_group_by>
+      <max_bytes_before_external_sort>1000000000</max_bytes_before_external_sort>
+    </default>
+  </profiles>
+</clickhouse>

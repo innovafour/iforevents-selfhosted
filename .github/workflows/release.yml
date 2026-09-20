@@ -1,0 +1,145 @@
+# Cuts a self-hosted release once both images of a version exist.
+#
+# iforevents-api and iforevents-dashboard each send a repository_dispatch
+# (event image-published) after pushing their image. Whichever arrives
+# second finds both tags on GHCR, runs the install test pinned to that
+# version, and publishes the GitHub Release users upgrade from. The
+# workflow_dispatch input does the same by hand.
+
+name: Release
+
+on:
+  repository_dispatch:
+    types: [image-published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release (X.Y.Z, both images must exist)
+        required: true
+  schedule:
+    # Catch-up without the cross-repository token: every hour, look for
+    # versions on GHCR that have no GitHub Release yet and release them.
+    - cron: '23 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.client_payload.version || github.event.inputs.version || 'scheduled' }}
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    # Scheduled runs: the newest api tag on GHCR that has no release yet.
+    # Dispatched and manual runs pass their version straight through.
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.pick.outputs.version }}
+    steps:
+      - name: Pick the version
+        id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GIVEN: ${{ github.event.client_payload.version || github.event.inputs.version }}
+        run: |
+          if [ -n "$GIVEN" ]; then
+            echo "version=$GIVEN" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Anonymous pull token for the public package, then its tag list.
+          token=$(curl -fsS "https://ghcr.io/token?scope=repository:innovafour/iforevents-api:pull" | jq -r .token || true)
+          tags=$(curl -fsS -H "Authorization: Bearer $token" "https://ghcr.io/v2/innovafour/iforevents-api/tags/list" 2>/dev/null | jq -r '.tags[]?' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V -r || true)
+          if [ -z "$tags" ]; then
+            echo "no public versions on GHCR yet (package private or empty)"
+            echo "version=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          for v in $tags; do
+            if ! gh release view "v$v" >/dev/null 2>&1; then
+              echo "version=$v" >> "$GITHUB_OUTPUT"
+              echo "unreleased version on GHCR: $v"
+              exit 0
+            fi
+          done
+          echo "every version on GHCR has a release"
+          echo "version=" >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: discover
+    if: needs.discover.outputs.version != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERSION: ${{ needs.discover.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Both images published?
+        id: images
+        run: |
+          missing=0
+          for image in iforevents-api iforevents-dashboard; do
+            if docker manifest inspect "ghcr.io/innovafour/${image}:${VERSION}" >/dev/null 2>&1; then
+              echo "ghcr.io/innovafour/${image}:${VERSION} present"
+            else
+              echo "ghcr.io/innovafour/${image}:${VERSION} not published yet"
+              missing=1
+            fi
+          done
+          echo "ready=$([ "$missing" = 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Already released?
+        id: existing
+        if: steps.images.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install test pinned to the version
+        if: steps.images.outputs.ready == 'true' && steps.existing.outputs.exists == 'false'
+        run: scripts/smoke.sh
+        env:
+          IFOREVENTS_VERSION: ${{ env.VERSION }}
+
+      - name: Publish the release
+        if: steps.images.outputs.ready == 'true' && steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          api_digest=$(docker manifest inspect --verbose "ghcr.io/innovafour/iforevents-api:${VERSION}" | sed -n 's/.*"digest": "\(sha256:[a-f0-9]*\)".*/\1/p' | head -1)
+          dash_digest=$(docker manifest inspect --verbose "ghcr.io/innovafour/iforevents-dashboard:${VERSION}" | sed -n 's/.*"digest": "\(sha256:[a-f0-9]*\)".*/\1/p' | head -1)
+          cat > notes.md <<NOTES
+          ## Images
+
+          | Image | Tag | Digest |
+          |---|---|---|
+          | \`ghcr.io/innovafour/iforevents-api\` | \`${VERSION}\` | \`${api_digest}\` |
+          | \`ghcr.io/innovafour/iforevents-dashboard\` | \`${VERSION}\` | \`${dash_digest}\` |
+
+          Both signed with cosign (keyless). Verify:
+
+          \`\`\`bash
+          cosign verify --certificate-oidc-issuer https://token.actions.githubusercontent.com \\
+            --certificate-identity-regexp '^https://github.com/innovafour/iforevents-(api|dashboard)/' \\
+            ghcr.io/innovafour/iforevents-api:${VERSION}
+          \`\`\`
+
+          ## Upgrade
+
+          \`\`\`bash
+          IFOREVENTS_VERSION=${VERSION} docker compose pull && IFOREVENTS_VERSION=${VERSION} docker compose up -d
+          \`\`\`
+
+          or set \`IFOREVENTS_VERSION=${VERSION}\` in \`.env\`. The install test passed on a fresh \`docker compose up -d\` with these images.
+          NOTES
+          gh release create "v${VERSION}" --title "IForevents ${VERSION}" --notes-file notes.md --latest
+
+      - name: Waiting for the other image
+        if: steps.images.outputs.ready != 'true'
+        run: echo "One image of ${VERSION} is not on GHCR yet; the next dispatch will finish the release."

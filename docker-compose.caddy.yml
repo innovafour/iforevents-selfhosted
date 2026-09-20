@@ -1,0 +1,38 @@
+# Optional overlay: one domain, automatic HTTPS (Let's Encrypt) through Caddy.
+#
+#   DOMAIN=analytics.example.com  ACME_EMAIL=you@example.com \
+#   PUBLIC_URL=https://analytics.example.com API_PUBLIC_URL=https://analytics.example.com \
+#   BIND_ADDRESS=127.0.0.1 TRUSTED_PROXY_CIDRS=172.28.0.0/16 \
+#   docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
+#
+# (or put those six lines in .env and run `docker compose -f docker-compose.yml
+# -f docker-compose.caddy.yml up -d`). Ports 80 and 443 must reach this host
+# and the DNS record for DOMAIN must point at it before the first start.
+#
+# Routing on the single domain:
+#   /v1/*, /mcp, /.well-known/*, /openapi.json, /health, /ready  -> api
+#   everything else                                               -> dashboard
+
+services:
+  caddy:
+    image: caddy:${CADDY_VERSION:-2-alpine}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN is required for the Caddy overlay}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      dashboard:
+        condition: service_healthy
+    networks: [iforevents]
+
+volumes:
+  caddy_data:
+  caddy_config:
