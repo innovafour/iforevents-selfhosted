@@ -8,8 +8,12 @@ account with us, no license key.
 
 ## Install
 
-Requirements: Docker Engine 24+ with Docker Compose v2, 2 CPUs, 4 GB RAM,
-20 GB disk. Linux, macOS or Windows with Docker Desktop.
+Requirements: Docker Engine 24+ with Docker Compose v2, on Linux, macOS or
+Windows with Docker Desktop. Minimum 1 CPU, 2 GB RAM, 5 GB disk: the stack
+idles around 350 MB of RAM and the images take about 1 GB. Recommended for
+steady traffic: 2 CPUs, 4 GB RAM, 20 GB disk, more as events pile up
+(ClickHouse is capped at 60% of RAM by `clickhouse/iforevents.xml`, so it
+shares a small host politely).
 
 ```bash
 mkdir iforevents && cd iforevents
@@ -26,14 +30,23 @@ new users come from team invitations in Settings, and signup is closed.
 
 The API listens on http://localhost:8000. Point your SDKs at it: the dashboard
 shows a ready-made snippet for each project under Projects, with the right
-URL and key filled in.
+URL and key filled in. The browser SDK is served by the api itself
+(`/sdk/v1/iforevents.min.js`), so pages you track never load anything from
+iforevents.com.
 
 ```bash
 curl -X POST http://localhost:8000/v1/events/track \
   -H "X-Project-Key: $PROJECT_KEY" \
+  -H "X-User-Id: user-42" \
   -H "Content-Type: application/json" \
-  -d '{"event_name":"signup","custom_uuid":"user-42"}'
+  -d '{"event_name":"signup"}'
 ```
+
+`X-User-Id` is your own id for the person, or an anonymous id you keep per
+visitor; the SDKs send one automatically. Without it events from one server,
+proxy or NAT all land on a single address-derived user, so server-side
+integrations must always send it (see
+https://iforevents.com/docs/tracking).
 
 ## What runs
 
@@ -89,12 +102,13 @@ ENV
 docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
 ```
 
-`/v1/*`, `/mcp` and `/.well-known/*` go to the api, everything else to the
-dashboard, so SDKs and the browser use the same origin.
+`/v1/*`, `/sdk/*`, `/mcp` and `/.well-known/*` go to the api, everything else
+to the dashboard, so SDKs and the browser use the same origin.
 
 Already have nginx or Traefik? Keep the base compose, set `BIND_ADDRESS=127.0.0.1`,
 proxy `PUBLIC_URL` to `127.0.0.1:8010` and `API_PUBLIC_URL` to
-`127.0.0.1:8000`, and put the proxy's address in `TRUSTED_PROXY_CIDRS`.
+`127.0.0.1:8000` (or route `/v1`, `/sdk`, `/mcp` and `/.well-known` of one
+host to `8000`), and put the proxy's address in `TRUSTED_PROXY_CIDRS`.
 
 ## Upgrade
 
