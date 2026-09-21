@@ -74,8 +74,11 @@ PROJECT=$(curl -fsS -X POST "${API}/v1/projects" -H "Authorization: Bearer ${TOK
 KEY=$(echo "$PROJECT" | jq -r .project.key)
 PROJECT_UUID=$(echo "$PROJECT" | jq -r .project.uuid)
 [ -n "$KEY" ] && [ "$KEY" != "null" ] || { echo "no project key: $PROJECT" >&2; exit 1; }
-curl -fsS -X POST "${API}/v1/events/track" -H "X-Project-Key: ${KEY}" -H 'Content-Type: application/json' \
-  -d '{"event_name":"smoke_test","custom_uuid":"smoke-user-1"}' >/dev/null
+curl -fsS -X POST "${API}/v1/events/track" -H "X-Project-Key: ${KEY}" -H "X-User-Id: smoke-user-1" -H 'Content-Type: application/json' \
+  -d '{"event_name":"smoke_test","event_type":"track"}' >/dev/null
+
+step "the browser SDK is served by the api"
+curl -fsS "${API}/sdk/v1/iforevents.min.js" | grep -q 'X-User-Id' || { echo "sdk not served by ${API}" >&2; exit 1; }
 
 step "the event is queryable"
 TOTAL=0
