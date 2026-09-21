@@ -171,7 +171,10 @@ services:
     environment:
       PORT: "8010"
       # Sessions are issued by the api itself (AUTH_MODE=local); the hosted
-      # accounts service is not part of a self-hosted install.
+      # accounts service is not part of a self-hosted install. Dashboards
+      # newer than 1.0.0-rc.1 detect this from the api (GET /v1/setup/status,
+      # self_hosted) when the variable is unset; it stays set here so the
+      # pinned image works either way.
       AUTH_MODE: local
       API_BASE_URL: http://api:8000/v1
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8010}
