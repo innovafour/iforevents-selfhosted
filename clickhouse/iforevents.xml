@@ -10,6 +10,17 @@
     <console>1</console>
   </logger>
 
+  <!-- Default codec for every column that declares none: ZSTD(1) is about
+       a quarter smaller than LZ4 on this data for little CPU. The events
+       table names its own codecs; this does not override them. Read once at
+       start: a change here needs the container recreated, not reloaded. -->
+  <compression>
+    <case>
+      <method>zstd</method>
+      <level>1</level>
+    </case>
+  </compression>
+
   <max_server_memory_usage_to_ram_ratio>0.6</max_server_memory_usage_to_ram_ratio>
   <max_concurrent_queries>64</max_concurrent_queries>
   <mark_cache_size>536870912</mark_cache_size>
