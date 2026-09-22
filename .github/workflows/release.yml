@@ -16,10 +16,6 @@ on:
       version:
         description: Version to release (X.Y.Z, both images must exist)
         required: true
-  schedule:
-    # Catch-up without the cross-repository token: every hour, look for
-    # versions on GHCR that have no GitHub Release yet and release them.
-    - cron: '23 * * * *'
 
 permissions:
   contents: write
