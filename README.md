@@ -56,10 +56,9 @@ https://iforevents.com/docs/tracking).
 | `api` | `ghcr.io/innovafour/iforevents-api` | Ingest, analytics, auth | 8000 |
 | `clickhouse` | `clickhouse/clickhouse-server` | Events, users, projects | none |
 | `redis` | `redis` | Project cache, rate limits | none |
-| `rabbitmq` | `rabbitmq` | Batch ingest queue | none |
 
-Data lives in named volumes: `clickhouse_data`, `redis_data`,
-`rabbitmq_data` and `api_data` (the generated session secret). Removing the
+Data lives in named volumes: `clickhouse_data`, `redis_data` and
+`api_data` (the generated session secret). Removing the
 containers keeps them; `docker compose down -v` deletes everything.
 
 Migrations run automatically when the api starts, on first boot and after
@@ -76,7 +75,7 @@ every variable with its default; the ones people set most:
 | `PUBLIC_URL`, `API_PUBLIC_URL` | You reach the install through a domain or a LAN address instead of localhost |
 | `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Create the admin at boot, for unattended installs |
 | `RESEND_API_KEY` + `RESEND_FROM`, or `SMTP_*` | Send invitations and password resets by e-mail |
-| `DB_PASSWORD`, `RABBITMQ_PASSWORD`, `TOKEN_SECRET` | Your own secrets instead of the internal defaults |
+| `DB_PASSWORD`, `TOKEN_SECRET` | Your own secrets instead of the internal defaults |
 | `IFOREVENTS_VERSION` | Pin a release |
 | `EVENTS_RETENTION_DAYS` | Drop raw events after N days |
 
@@ -136,8 +135,7 @@ Both land in `./backups`. Restore with
 `RESTORE DATABASE iforevents FROM Disk('backups', 'iforevents-<date>.zip')`
 on an empty database, and untar `api_data.tgz` into the `api_data` volume.
 
-Redis and RabbitMQ hold caches and in-flight batches only; they rebuild
-themselves.
+Redis holds caches only; it rebuilds itself.
 
 ## Uninstall
 
@@ -147,13 +145,13 @@ docker compose down -v
 
 ## Security notes
 
-- Only ports 8010 and 8000 are published. ClickHouse, Redis and RabbitMQ are
+- Only ports 8010 and 8000 are published. ClickHouse and Redis are
   internal to the Docker network; that is why their default passwords are
   acceptable on a host you control. Change them on a shared host.
 - Session cookies are `Secure` when `PUBLIC_URL` is https. Over plain http on
   a LAN they are not, which is the trade-off of not having a certificate.
-- The api refuses wildcard CORS and the RabbitMQ guest account, and never
-  ships a default session secret: it generates one per install.
+- The api refuses wildcard CORS and never ships a default session secret:
+  it generates one per install.
 - Report vulnerabilities privately to security@iforevents.com. Do not open a
   public issue.
 
