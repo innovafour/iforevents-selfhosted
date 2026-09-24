@@ -2,8 +2,8 @@
      /etc/clickhouse-server/config.d/ by docker-compose.yml.
 
      ClickHouse would otherwise claim 90% of the host's RAM and log every
-     query at trace level. These caps leave room for the api, Redis and
-     RabbitMQ on the same box; raise them on a dedicated host. -->
+     query at trace level. These caps leave room for the api, the dashboard
+     and Redis on the same box; raise them on a dedicated host. -->
 <clickhouse>
   <logger>
     <level>warning</level>

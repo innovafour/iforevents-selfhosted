@@ -8,16 +8,15 @@
 # first visit to the dashboard creates the admin account. To change a value,
 # put it in a .env file next to this compose file (see .env.example).
 #
-# Five services, one private network, four persistent volumes:
+# Four services, one private network, three persistent volumes:
 #
 #   dashboard :8010  -> api :8000 -> clickhouse (events, users, projects)
 #                                 -> redis      (project cache, rate limits)
-#                                 -> rabbitmq   (batch ingest queue)
 #
-# Only the api and the dashboard publish a port. ClickHouse, Redis and
-# RabbitMQ are reachable from inside the network alone, which is why their
-# default credentials are acceptable: change them anyway if the Docker host
-# is shared.
+# Only the api and the dashboard publish a port. ClickHouse and Redis are
+# reachable from inside the network alone, which is why their default
+# credentials are acceptable: change them anyway if the Docker host is
+# shared.
 #
 # IFOREVENTS_VERSION defaults to the newest release this file was tested
 # with; set it in .env to move (releases: github.com/innovafour/iforevents-selfhosted/releases).
@@ -69,25 +68,8 @@ services:
       timeout: 3s
       retries: 5
 
-  rabbitmq:
-    image: rabbitmq:${RABBITMQ_VERSION:-4.0-alpine}
-    restart: unless-stopped
-    logging: *logging
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-iforevents}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-iforevents}
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks: [iforevents]
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 20s
-
   api:
-    image: ghcr.io/innovafour/iforevents-api:${IFOREVENTS_VERSION:-1.0.0-rc.1}
+    image: ghcr.io/innovafour/iforevents-api:${IFOREVENTS_VERSION:-1.1.0}
     restart: unless-stopped
     logging: *logging
     ports:
@@ -118,7 +100,8 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
 
-      RABBITMQ_URL: amqp://${RABBITMQ_USER:-iforevents}:${RABBITMQ_PASSWORD:-iforevents}@rabbitmq:5672/
+      # No RABBITMQ_URL: the broker only carries the Cloud destinations bus,
+      # which a self-hosted install does not run.
 
       # Optional. Leave empty to create the admin from the dashboard on the
       # first visit instead. Ignored once any account exists.
@@ -152,8 +135,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
     networks: [iforevents]
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8000/ready"]
@@ -163,7 +144,7 @@ services:
       start_period: 40s
 
   dashboard:
-    image: ghcr.io/innovafour/iforevents-dashboard:${IFOREVENTS_VERSION:-1.0.0-rc.1}
+    image: ghcr.io/innovafour/iforevents-dashboard:${IFOREVENTS_VERSION:-1.1.0}
     restart: unless-stopped
     logging: *logging
     ports:
@@ -198,7 +179,6 @@ volumes:
   clickhouse_data:
   clickhouse_logs:
   redis_data:
-  rabbitmq_data:
   api_data:
 
 networks:
