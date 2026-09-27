@@ -162,4 +162,4 @@ docker compose down -v
 
 MIT licensed. The hosted edition, IForevents Cloud, runs the same images with
 a managed control plane; sign up at https://app.iforevents.com/register and
-start on the free plan (5M events a month), see https://iforevents.com/docs/cloud.
+start on the free plan (2M events a month), see https://iforevents.com/docs/cloud.
