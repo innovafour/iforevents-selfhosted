@@ -1,21 +1,128 @@
-MIT License
+IForevents Self-Hosted License
+Version 1.0, 2026-10-03
+SPDX identifier: LicenseRef-IForevents-Self-Hosted-1.0
 
-Copyright (c) 2026 Innovafour
+Copyright (c) 2026 Innovafour (https://innovafour.com). All rights not
+expressly granted below are reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This is a source-available license, not an open-source license. You may run
+IForevents for yourself or for your own organization at no cost. You may not
+make it a business of its own: hosting, renting, reselling or offering
+IForevents to others requires a commercial license from Innovafour.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+
+1. Definitions
+
+"Software" means the files in this repository and the IForevents container
+images they install (including ghcr.io/innovafour/iforevents-api and
+ghcr.io/innovafour/iforevents-dashboard), in every version published under
+this license, and any copy, modification or derivative work of them.
+Third-party components bundled with the Software (for example ClickHouse and
+Redis) remain under their own licenses.
+
+"You" means the individual or the single legal entity that installs or runs
+the Software. For a legal entity, "you" includes the entities it controls, is
+controlled by or is under common control with.
+
+"Personal Use" means use by an individual for personal, hobby, study,
+research, testing or evaluation purposes.
+
+"Internal Use" means use by you, and by your employees and individual
+contractors acting on your behalf, to collect and analyze data about your own
+products, websites, applications, services and operations. Internal Use
+includes use inside a for-profit business: earning money from your own
+products while measuring them with the Software is allowed.
+
+"Third Party" means any person or entity other than you.
+
+"Commercial Use" means any use described in section 3.
+
+
+2. License grant
+
+Subject to the terms of this license, Innovafour grants you a worldwide,
+non-exclusive, royalty-free, non-transferable and non-sublicensable license
+to download, install, run, copy and modify the Software, solely for Personal
+Use or Internal Use.
+
+A contractor or consultant may install, configure and operate the Software on
+your behalf, and may charge you for that work, provided the instance is
+dedicated to your Internal Use, is under your control, and is not used to
+serve anyone else.
+
+
+3. Commercial use is not permitted
+
+Without a separate written commercial license signed by Innovafour, you may
+not, whether or not you charge for it:
+
+  (a) offer the Software, or any substantial part of its functionality, to
+      Third Parties as a hosted, managed, software-as-a-service, platform or
+      white-label service;
+
+  (b) rent, lease, sell, resell, sublicense or otherwise provide Third
+      Parties with access to an instance of the Software, or to projects,
+      organizations, workspaces or accounts inside an instance, including
+      collecting or analyzing Third Parties' product data for them as a
+      service (for example, an agency hosting analytics for its clients);
+
+  (c) sell, license or distribute the Software, or a modified version of it,
+      as part of a product or service you provide to Third Parties;
+
+  (d) remove, alter or obscure this license, copyright notices or the
+      IForevents name and attribution shown in the Software.
+
+Contact legal@iforevents.com for a commercial license. The hosted edition,
+IForevents Cloud (https://iforevents.com), is the alternative when you need
+analytics for several organizations without operating it yourself.
+
+
+4. Redistribution
+
+You may make the copies of the Software that your permitted use reasonably
+requires, including mirroring the container images inside your own
+infrastructure. You may share unmodified copies of this repository only with
+this license file included. You may not publish or distribute the container
+images, or modified versions of them, to Third Parties.
+
+
+5. Feedback and contributions
+
+If you send us suggestions, issues or pull requests, you grant Innovafour a
+perpetual, irrevocable, royalty-free license to use them for any purpose,
+including incorporating them into the Software under this or any other
+license.
+
+
+6. Termination
+
+This license ends automatically if you breach it. If you stop the breach
+within 30 days after receiving written notice from Innovafour, and it is the
+first time you have received such a notice, your license is reinstated.
+Otherwise you must stop using the Software and delete your copies. Sections
+5, 7 and 8 survive termination.
+
+
+7. No warranty
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+
+8. Limitation of liability
+
+IN NO EVENT SHALL INNOVAFOUR OR THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+9. Versions
+
+Innovafour may publish new versions of this license. Each version of the
+Software is licensed under the version of this license included with it.
+Versions of this repository and of the images published before 2026-10-03
+were distributed under the MIT License; copies obtained under it keep that
+license, while every version published on or after 2026-10-03 is under this
+license.
