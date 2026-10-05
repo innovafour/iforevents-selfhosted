@@ -40,6 +40,28 @@
     <allowed_path>/backups/</allowed_path>
   </backups>
 
+  <!-- Parts a merge replaces stay on disk for old_parts_lifetime (480 s
+       by default). At 20 events/s onto a 20 MB table that held 4.4 GB; 60 s
+       held 1.0 GB (iforevents-api docs/STORAGE_BENCHMARK.md). They are kept
+       so a hard reboot cannot lose a merged part not yet on disk, so every
+       merged part is fsynced, with its directory, before it replaces them. -->
+  <merge_tree>
+    <old_parts_lifetime>60</old_parts_lifetime>
+    <min_compressed_bytes_to_fsync_after_merge>1</min_compressed_bytes_to_fsync_after_merge>
+    <fsync_part_directory>1</fsync_part_directory>
+  </merge_tree>
+
+  <!-- ClickHouse's own logs grow with time and queries, not with your data,
+       and never expire by default: drop the profiling ones and keep the
+       useful ones a week, as the hosted server does. -->
+  <asynchronous_metric_log remove="1"/>
+  <trace_log remove="1"/>
+  <metric_log remove="1"/>
+  <processors_profile_log remove="1"/>
+  <query_log><ttl>event_date + INTERVAL 7 DAY DELETE</ttl></query_log>
+  <text_log><ttl>event_date + INTERVAL 7 DAY DELETE</ttl></text_log>
+  <part_log><ttl>event_date + INTERVAL 7 DAY DELETE</ttl></part_log>
+
   <profiles>
     <default>
       <max_memory_usage>2000000000</max_memory_usage>
