@@ -69,7 +69,7 @@ services:
       retries: 5
 
   api:
-    image: ghcr.io/innovafour/iforevents-api:${IFOREVENTS_VERSION:-1.1.0}
+    image: ghcr.io/innovafour/iforevents-api:${IFOREVENTS_VERSION:-1.2.0}
     restart: unless-stopped
     logging: *logging
     ports:
@@ -144,7 +144,7 @@ services:
       start_period: 40s
 
   dashboard:
-    image: ghcr.io/innovafour/iforevents-dashboard:${IFOREVENTS_VERSION:-1.1.0}
+    image: ghcr.io/innovafour/iforevents-dashboard:${IFOREVENTS_VERSION:-1.2.0}
     restart: unless-stopped
     logging: *logging
     ports:
