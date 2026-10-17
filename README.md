@@ -4,7 +4,9 @@ Product analytics on your own servers. Events from your apps, a dashboard to
 query them, and the data never leaves your infrastructure.
 
 This repository is the install: one `docker-compose.yml`, public images, no
-account with us, no license key.
+account with us, no license key. Free for personal use and for your own
+organization's analytics; hosting or reselling it for others needs a
+commercial license (see [License](#license)).
 
 ## Install
 
@@ -160,6 +162,25 @@ docker compose down -v
 - Documentation: https://iforevents.com/docs
 - Issues and questions: https://github.com/innovafour/iforevents-selfhosted/issues
 
-MIT licensed. The hosted edition, IForevents Cloud, runs the same images with
-a managed control plane; sign up at https://app.iforevents.com/register and
-start on the free plan (2M events a month), see https://iforevents.com/docs/cloud.
+The hosted edition, IForevents Cloud, runs the same images with a managed
+control plane; sign up at https://app.iforevents.com/register and start on the
+free plan (2M events a month), see https://iforevents.com/docs/cloud.
+
+## License
+
+IForevents self-hosted is source-available under the
+[IForevents Self-Hosted License](LICENSE), not an open-source license.
+
+- Allowed, at no cost: personal use, and running it for your own company's
+  products, websites and operations, including for-profit businesses. A
+  contractor may set it up and run it for you, as long as the instance only
+  serves you.
+- Not allowed without a commercial license: offering IForevents to others as
+  a hosted or managed service (SaaS), renting or selling access to instances,
+  projects or organizations, hosting analytics for clients, reselling or
+  white-labeling it.
+
+For a commercial license write to legal@iforevents.com. Versions published
+before 2026-10-03 were MIT licensed and those copies keep that license; every
+version from 2026-10-03 on is under the IForevents Self-Hosted License. The
+SDKs are separate packages that keep their own open-source licenses.
