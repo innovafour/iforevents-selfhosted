@@ -1,7 +1,7 @@
 # IForevents, self-hosted
 
-Product analytics on your own servers. Events from your apps, a dashboard to
-query them, and the data never leaves your infrastructure.
+Free product analytics on your own servers. Events from your apps, a
+dashboard to query them, and the data never leaves your infrastructure.
 
 This repository is the install: one `docker-compose.yml`, public images, no
 account with us, no license key. Free for personal use and for your own
@@ -162,14 +162,11 @@ docker compose down -v
 - Documentation: https://iforevents.com/docs
 - Issues and questions: https://github.com/innovafour/iforevents-selfhosted/issues
 
-The hosted edition, IForevents Cloud, runs the same images with a managed
-control plane; sign up at https://app.iforevents.com/register and start on the
-free plan (2M events a month), see https://iforevents.com/docs/cloud.
-
 ## License
 
-IForevents self-hosted is source-available under the
-[IForevents Self-Hosted License](LICENSE), not an open-source license.
+IForevents is free to use under the
+[IForevents Self-Hosted License](LICENSE), not an open-source license. The
+application source is not published; the images are.
 
 - Allowed, at no cost: personal use, and running it for your own company's
   products, websites and operations, including for-profit businesses. A
