@@ -18,6 +18,8 @@ on:
         required: true
 
 permissions:
+  actions: read
+  statuses: write
   contents: write
 
 concurrency:
@@ -25,10 +27,40 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  runner_discover:
+    name: Reserve Mac mini for discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+    permissions:
+      contents: read
+      actions: read
+      statuses: write
+    outputs:
+      runner: ${{ steps.choose.outputs.runner }}
+    steps:
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        persist-credentials: false
+    - name: Choose local runner or GitHub fallback
+      id: choose
+      env:
+        GH_TOKEN: ${{ github.token }}
+        FALLBACK_RUNNER: '["ubuntu-latest"]'
+        LOCAL_RUNNER_KIND: deploy
+        RUNNER_REQUEST_KEY: .github/workflows/release.yml:discover
+        FORCE_GITHUB: ${{ vars.FORCE_GITHUB_RUNNERS || 'false' }}
+      run: python3 .github/scripts/select-runner.py
+
   discover:
     # Scheduled runs: the newest api tag on GHCR that has no release yet.
     # Dispatched and manual runs pass their version straight through.
-    runs-on: ubuntu-latest
+    env:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+    needs: [runner_discover]
+    runs-on: ${{ github.run_attempt > 1 && fromJSON('["ubuntu-latest"]') || fromJSON(needs.runner_discover.outputs.runner || '["ubuntu-latest"]') }}
     outputs:
       version: ${{ steps.pick.outputs.version }}
     steps:
@@ -61,12 +93,42 @@ jobs:
           echo "every version on GHCR has a release"
           echo "version=" >> "$GITHUB_OUTPUT"
 
-  release:
+  runner_release:
+    name: Reserve Mac mini for release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+    permissions:
+      contents: read
+      actions: read
+      statuses: write
+    outputs:
+      runner: ${{ steps.choose.outputs.runner }}
+    steps:
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        persist-credentials: false
+    - name: Choose local runner or GitHub fallback
+      id: choose
+      env:
+        GH_TOKEN: ${{ github.token }}
+        FALLBACK_RUNNER: '["ubuntu-latest"]'
+        LOCAL_RUNNER_KIND: deploy
+        RUNNER_REQUEST_KEY: .github/workflows/release.yml:release
+        FORCE_GITHUB: ${{ vars.FORCE_GITHUB_RUNNERS || 'false' }}
+      run: python3 .github/scripts/select-runner.py
     needs: discover
     if: needs.discover.outputs.version != ''
-    runs-on: ubuntu-latest
+
+  release:
+    needs: ["discover", "runner_release"]
+    if: needs.discover.outputs.version != ''
+    runs-on: ${{ github.run_attempt > 1 && fromJSON('["ubuntu-latest"]') || fromJSON(needs.runner_release.outputs.runner || '["ubuntu-latest"]') }}
     timeout-minutes: 30
     env:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
       VERSION: ${{ needs.discover.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
