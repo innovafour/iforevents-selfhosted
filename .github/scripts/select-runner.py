@@ -56,7 +56,7 @@ def select(environ, event, call=api, now=time.time, sleep=time.sleep):
     endpoint = f'repos/{repository}/statuses/{sha}'
     deadline = now() + timeout
     request = {'context': context, 'state': 'pending',
-               'description': json.dumps({'kind': environ['LOCAL_RUNNER_KIND'], 'expires': int(deadline)}, separators=(',', ':')),
+               'description': json.dumps({'kind': environ['LOCAL_RUNNER_KIND'], 'expires': int(deadline), 'queue_ttl': 600}, separators=(',', ':')),
                'target_url': f'https://github.com/{repository}/actions/runs/{environ["GITHUB_RUN_ID"]}'}
     submitted = False
     while now() < deadline:
@@ -71,7 +71,7 @@ def select(environ, event, call=api, now=time.time, sleep=time.sleep):
             if status and status['state'] == 'pending' and status.get('creator', {}).get('login') == 'adcmdev':
                 heartbeat = json.loads(status.get('description', '{}'))
                 expires = float(heartbeat.get('expires', 0))
-                if heartbeat.get('queued') is True and heartbeat.get('kind') == environ['LOCAL_RUNNER_KIND'] and now() < expires <= now() + 180:
+                if heartbeat.get('queued') is True and heartbeat.get('kind') == environ['LOCAL_RUNNER_KIND'] and now() < expires <= now() + 600:
                     deadline = max(deadline, expires)
             if status and status['state'] in ('failure', 'error'):
                 break
