@@ -39,7 +39,7 @@ def select(environ, event, call=api, now=time.time, sleep=time.sleep):
     fallback = json.loads(environ['FALLBACK_RUNNER'])
     if not trusted(event, environ):
         return fallback, 'This event uses GitHub-hosted runners'
-    if environ.get('FORCE_GITHUB') == 'true' or int(environ.get('GITHUB_RUN_ATTEMPT', '1')) > 1:
+    if environ.get('FORCE_GITHUB') == 'true':
         return fallback, 'GitHub-hosted runner requested for this attempt'
     timeout = min(int(environ.get('LOCAL_WAIT_SECONDS', '180')), 180)
     key = hashlib.sha256(environ['RUNNER_REQUEST_KEY'].encode()).hexdigest()[:12]
@@ -58,23 +58,31 @@ def select(environ, event, call=api, now=time.time, sleep=time.sleep):
     request = {'context': context, 'state': 'pending',
                'description': json.dumps({'kind': environ['LOCAL_RUNNER_KIND'], 'expires': int(deadline)}, separators=(',', ':')),
                'target_url': f'https://github.com/{repository}/actions/runs/{environ["GITHUB_RUN_ID"]}'}
-    try:
-        call(endpoint, request)
-        while now() < deadline:
+    submitted = False
+    while now() < deadline:
+        try:
+            if not submitted:
+                call(endpoint, request)
+                submitted = True
             statuses = call(endpoint + '?per_page=100')
             status = next((item for item in statuses if item['context'] == context), None)
             if status and status['state'] == 'success' and status.get('creator', {}).get('login') == 'adcmdev':
                 return ['self-hosted', label], 'Mac mini confirmed a runner reserved for this job'
+            if status and status['state'] == 'pending' and status.get('creator', {}).get('login') == 'adcmdev':
+                heartbeat = json.loads(status.get('description', '{}'))
+                expires = float(heartbeat.get('expires', 0))
+                if heartbeat.get('queued') is True and heartbeat.get('kind') == environ['LOCAL_RUNNER_KIND'] and now() < expires <= now() + 180:
+                    deadline = max(deadline, expires)
             if status and status['state'] in ('failure', 'error'):
                 break
-            sleep(min(10, max(0, deadline - now())))
-    except (RuntimeError, subprocess.TimeoutExpired, ValueError, KeyError):
-        pass
+        except (RuntimeError, subprocess.TimeoutExpired, ValueError, KeyError, TypeError):
+            pass
+        sleep(min(10, max(0, deadline - now())))
     try:
         call(endpoint, {**request, 'state': 'success', 'description': 'Using GitHub-hosted runner: no local reservation before deadline'})
     except (RuntimeError, subprocess.TimeoutExpired, ValueError):
         pass
-    return fallback, 'Mac mini unavailable or occupied; continuing on GitHub'
+    return fallback, 'Mac mini coordinator unavailable; continuing on GitHub'
 
 
 def main():

@@ -30,7 +30,7 @@ jobs:
   runner_discover:
     name: Reserve Mac mini for discover
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 360
     defaults:
       run:
         working-directory: ${{ github.workspace }}
@@ -44,6 +44,8 @@ jobs:
     - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       with:
         persist-credentials: false
+        sparse-checkout: .github/scripts/select-runner.py
+        sparse-checkout-cone-mode: false
     - name: Choose local runner or GitHub fallback
       id: choose
       env:
@@ -60,7 +62,7 @@ jobs:
     env:
       DOCKER_DEFAULT_PLATFORM: linux/amd64
     needs: [runner_discover]
-    runs-on: ${{ github.run_attempt > 1 && fromJSON('["ubuntu-latest"]') || fromJSON(needs.runner_discover.outputs.runner || '["ubuntu-latest"]') }}
+    runs-on: ${{ fromJSON(needs.runner_discover.outputs.runner || '["ubuntu-latest"]') }}
     outputs:
       version: ${{ steps.pick.outputs.version }}
     steps:
@@ -96,7 +98,7 @@ jobs:
   runner_release:
     name: Reserve Mac mini for release
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 360
     defaults:
       run:
         working-directory: ${{ github.workspace }}
@@ -110,6 +112,8 @@ jobs:
     - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       with:
         persist-credentials: false
+        sparse-checkout: .github/scripts/select-runner.py
+        sparse-checkout-cone-mode: false
     - name: Choose local runner or GitHub fallback
       id: choose
       env:
@@ -125,7 +129,7 @@ jobs:
   release:
     needs: ["discover", "runner_release"]
     if: needs.discover.outputs.version != ''
-    runs-on: ${{ github.run_attempt > 1 && fromJSON('["ubuntu-latest"]') || fromJSON(needs.runner_release.outputs.runner || '["ubuntu-latest"]') }}
+    runs-on: ${{ fromJSON(needs.runner_release.outputs.runner || '["ubuntu-latest"]') }}
     timeout-minutes: 30
     env:
       DOCKER_DEFAULT_PLATFORM: linux/amd64
